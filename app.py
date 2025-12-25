@@ -6,7 +6,150 @@ import pandas as pd
 import pytz
 
 # Page config MUST be first
-st.set_page_config(page_title="Customer Records Manager", layout="wide", page_icon="📊")
+st.set_page_config(
+    page_title="Customer Records Manager",
+    layout="wide",
+    page_icon="📊",
+    initial_sidebar_state="collapsed"
+)
+
+# Custom CSS for dark theme and professional UI
+st.markdown("""
+<style>
+    /* Dark theme */
+    .stApp {
+        background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    }
+    
+    /* Custom containers */
+    .main-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    }
+    
+    .metric-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Button styling */
+    .stButton>button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Form inputs */
+    .stTextInput>div>div>input,
+    .stSelectbox>div>div>select,
+    .stTextArea>div>div>textarea,
+    .stNumberInput>div>div>input {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+        padding: 0.6rem;
+    }
+    
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Cards */
+    .transaction-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-left: 4px solid #667eea;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Headers */
+    h1, h2, h3 {
+        color: white !important;
+        font-weight: 700;
+    }
+    
+    /* Success/Error boxes */
+    .stSuccess, .stError, .stWarning, .stInfo {
+        border-radius: 8px;
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 0.5rem;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    /* Radio buttons */
+    .stRadio > div {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 1rem;
+    }
+    
+    /* Download button */
+    .stDownloadButton>button {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .stDownloadButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+    }
+    
+    /* Date input */
+    .stDateInput>div>div>input {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+    }
+    
+    /* Divider */
+    hr {
+        border-color: rgba(255, 255, 255, 0.1);
+        margin: 2rem 0;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Database setup
 DB_NAME = "customer_records.db"
@@ -239,68 +382,77 @@ def calculate_summary(transactions):
 
 # AUTH SCREEN
 if not st.session_state.logged_in:
-    st.title("📊 Customer Records Manager")
-    st.markdown("### Manage your customer transactions easily")
+    # Centered login container
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    tab1, tab2 = st.tabs(["Login", "Register"])
-    
-    with tab1:
-        st.subheader("Login to Your Account")
-        with st.form("login_form"):
-            email = st.text_input("Email Address")
-            password = st.text_input("Password", type="password")
-            submit = st.form_submit_button("Login", type="primary", use_container_width=True)
-            
-            if submit:
-                if email and password:
-                    success, user_id, user_name = login_user(email, password)
-                    if success:
-                        st.session_state.logged_in = True
-                        st.session_state.user_id = user_id
-                        st.session_state.user_name = user_name
-                        st.rerun()
-                    else:
-                        st.error("❌ Invalid email or password")
-                else:
-                    st.warning("⚠️ Please fill in all fields")
-    
-    with tab2:
-        st.subheader("Create New Account")
-        with st.form("register_form"):
-            name = st.text_input("Your Name")
-            email = st.text_input("Email Address")
-            password = st.text_input("Password (minimum 6 characters)", type="password")
-            submit = st.form_submit_button("Create Account", type="primary", use_container_width=True)
-            
-            if submit:
-                if name and email and password:
-                    if len(password) < 6:
-                        st.error("❌ Password must be at least 6 characters")
-                    else:
-                        success, user_id, user_name = register_user(name, email, password)
+    with col2:
+        st.markdown('<div class="main-header">', unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: white;'>📊 Customer Records Manager</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: rgba(255,255,255,0.8); font-size: 1.2rem;'>Professional Transaction Management System</p>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
+        
+        with tab1:
+            st.markdown("### Welcome Back")
+            with st.form("login_form"):
+                email = st.text_input("📧 Email Address", placeholder="Enter your email")
+                password = st.text_input("🔒 Password", type="password", placeholder="Enter your password")
+                st.write("")
+                submit = st.form_submit_button("🚀 Login", type="primary", use_container_width=True)
+                
+                if submit:
+                    if email and password:
+                        success, user_id, user_name = login_user(email, password)
                         if success:
                             st.session_state.logged_in = True
                             st.session_state.user_id = user_id
                             st.session_state.user_name = user_name
-                            st.success("✅ Account created successfully!")
                             st.rerun()
                         else:
-                            st.error("❌ Email already exists")
-                else:
-                    st.warning("⚠️ Please fill in all fields")
+                            st.error("❌ Invalid email or password")
+                    else:
+                        st.warning("⚠️ Please fill in all fields")
+        
+        with tab2:
+            st.markdown("### Create Your Account")
+            with st.form("register_form"):
+                name = st.text_input("👤 Your Name", placeholder="Enter your full name")
+                email = st.text_input("📧 Email Address", placeholder="Enter your email")
+                password = st.text_input("🔒 Password", type="password", placeholder="Minimum 6 characters")
+                st.write("")
+                submit = st.form_submit_button("✨ Create Account", type="primary", use_container_width=True)
+                
+                if submit:
+                    if name and email and password:
+                        if len(password) < 6:
+                            st.error("❌ Password must be at least 6 characters")
+                        else:
+                            success, user_id, user_name = register_user(name, email, password)
+                            if success:
+                                st.session_state.logged_in = True
+                                st.session_state.user_id = user_id
+                                st.session_state.user_name = user_name
+                                st.success("✅ Account created successfully!")
+                                st.rerun()
+                            else:
+                                st.error("❌ Email already exists")
+                    else:
+                        st.warning("⚠️ Please fill in all fields")
 
 # CUSTOMER SCREEN
 else:
-    # Header
+    # Header with gradient
+    st.markdown('<div class="main-header">', unsafe_allow_html=True)
     col1, col2 = st.columns([4, 1])
     with col1:
-        st.title(f"👋 Welcome, {st.session_state.user_name}!")
+        st.markdown(f"<h1 style='color: white; margin: 0;'>👋 Welcome, {st.session_state.user_name}!</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='color: rgba(255,255,255,0.8); margin: 0;'>Manage your customer transactions efficiently</p>", unsafe_allow_html=True)
     with col2:
-        if st.button("Logout", type="secondary", use_container_width=True):
+        if st.button("🚪 Logout", type="secondary", use_container_width=True):
             st.session_state.clear()
             st.rerun()
-    
-    st.markdown("---")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Customer Selection
     customers = get_customers(st.session_state.user_id)
@@ -402,14 +554,20 @@ else:
         if transactions:
             total_received, total_given, balance = calculate_summary(transactions)
             
-            st.markdown("### 📊 Financial Summary")
+            st.markdown("### 💼 Financial Overview")
             col1, col2, col3 = st.columns(3)
             with col1:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
                 st.metric("💰 Total Received", f"₨ {total_received:,.2f}")
+                st.markdown('</div>', unsafe_allow_html=True)
             with col2:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
                 st.metric("💸 Total Given", f"₨ {total_given:,.2f}")
+                st.markdown('</div>', unsafe_allow_html=True)
             with col3:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
                 st.metric("📈 Net Balance", f"₨ {balance:,.2f}")
+                st.markdown('</div>', unsafe_allow_html=True)
             
             # Download CSV
             st.write("")
@@ -522,58 +680,58 @@ else:
         # Display Transactions
         if transactions:
             st.markdown("---")
-            st.markdown("### 📜 All Transactions")
-            st.caption(f"Showing {len(transactions)} transaction(s)")
+            st.markdown("### 📜 Transaction History")
+            st.caption(f"📊 Showing {len(transactions)} transaction(s)")
             
             for trans in transactions:
                 trans_id, date_time, trans_type, total_amount, amount_received, amount_left, note = trans
                 
-                with st.container():
-                    col1, col2, col3, col4, col5, col6, col7 = st.columns([2, 1, 1.2, 1.2, 1.2, 2.5, 0.8])
-                    
-                    with col1:
-                        st.write(f"**📅 {date_time}**")
-                    with col2:
-                        if trans_type == "Received":
-                            st.success("✅ Received")
-                        else:
-                            st.error("❌ Given")
-                    with col3:
-                        st.write(f"**Total: ₨ {total_amount:,.2f}**")
-                    with col4:
-                        st.write(f"Paid: ₨ {amount_received:,.2f}")
-                    with col5:
-                        st.write(f"Pending: ₨ {amount_left:,.2f}")
-                    with col6:
-                        st.write(note if note else "—")
-                    with col7:
-                        btn_col1, btn_col2 = st.columns(2)
-                        with btn_col1:
-                            if st.button("✏️", key=f"edit_{trans_id}", help="Edit this transaction"):
-                                st.session_state.edit_transaction_id = trans_id
-                                st.session_state.show_add_form = False
-                                st.rerun()
-                        with btn_col2:
-                            if st.button("🗑️", key=f"del_{trans_id}", help="Delete this transaction"):
-                                st.session_state[f'confirm_delete_{trans_id}'] = True
-                                st.rerun()
-                    
-                    # Delete confirmation
-                    if st.session_state.get(f'confirm_delete_{trans_id}', False):
-                        st.warning("⚠️ **Are you sure?** This transaction will be permanently deleted.")
-                        conf_col1, conf_col2 = st.columns(2)
-                        with conf_col1:
-                            if st.button("✅ Yes, Delete", key=f"confirm_yes_{trans_id}", type="primary", use_container_width=True):
-                                delete_transaction(trans_id)
-                                st.session_state[f'confirm_delete_{trans_id}'] = False
-                                st.success("✅ Transaction deleted successfully!")
-                                st.rerun()
-                        with conf_col2:
-                            if st.button("❌ Cancel", key=f"confirm_no_{trans_id}", use_container_width=True):
-                                st.session_state[f'confirm_delete_{trans_id}'] = False
-                                st.rerun()
-                    
-                    st.markdown("---")
+                st.markdown('<div class="transaction-card">', unsafe_allow_html=True)
+                col1, col2, col3, col4, col5, col6, col7 = st.columns([2, 1, 1.2, 1.2, 1.2, 2.5, 0.8])
+                
+                with col1:
+                    st.markdown(f"**📅 {date_time}**")
+                with col2:
+                    if trans_type == "Received":
+                        st.success("✅ Received")
+                    else:
+                        st.error("❌ Given")
+                with col3:
+                    st.markdown(f"**Total:** ₨ {total_amount:,.2f}")
+                with col4:
+                    st.write(f"Paid: ₨ {amount_received:,.2f}")
+                with col5:
+                    st.write(f"Pending: ₨ {amount_left:,.2f}")
+                with col6:
+                    st.write(note if note else "—")
+                with col7:
+                    btn_col1, btn_col2 = st.columns(2)
+                    with btn_col1:
+                        if st.button("✏️", key=f"edit_{trans_id}", help="Edit"):
+                            st.session_state.edit_transaction_id = trans_id
+                            st.session_state.show_add_form = False
+                            st.rerun()
+                    with btn_col2:
+                        if st.button("🗑️", key=f"del_{trans_id}", help="Delete"):
+                            st.session_state[f'confirm_delete_{trans_id}'] = True
+                            st.rerun()
+                
+                # Delete confirmation
+                if st.session_state.get(f'confirm_delete_{trans_id}', False):
+                    st.warning("⚠️ **Confirm Deletion** - This action cannot be undone!")
+                    conf_col1, conf_col2 = st.columns(2)
+                    with conf_col1:
+                        if st.button("✅ Yes, Delete", key=f"confirm_yes_{trans_id}", type="primary", use_container_width=True):
+                            delete_transaction(trans_id)
+                            st.session_state[f'confirm_delete_{trans_id}'] = False
+                            st.success("✅ Transaction deleted successfully!")
+                            st.rerun()
+                    with conf_col2:
+                        if st.button("❌ Cancel", key=f"confirm_no_{trans_id}", use_container_width=True):
+                            st.session_state[f'confirm_delete_{trans_id}'] = False
+                            st.rerun()
+                
+                st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("📝 No transactions found. Click 'Add Transaction' to record your first entry!")
     else:
