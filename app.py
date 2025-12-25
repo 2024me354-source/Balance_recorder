@@ -366,8 +366,7 @@ else:
             with col2:
                 st.metric("💸 Total Given", f"₨ {total_given:,.2f}")
             with col3:
-                balance_color = "normal" if balance >= 0 else "inverse"
-                st.metric("📈 Net Balance", f"₨ {balance:,.2f}", delta_color=balance_color)
+                st.metric("📈 Net Balance", f"₨ {balance:,.2f}")
             
             # Download CSV
             st.write("")
