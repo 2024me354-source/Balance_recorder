@@ -140,18 +140,27 @@ def add_customer(user_id, name):
     conn.commit()
     conn.close()
 
-def get_transactions(customer_id, month_filter=None):
-    """Get all transactions for a customer"""
+def get_transactions(customer_id, month_filter=None, start_date=None, end_date=None):
+    """Get all transactions for a customer with optional filters"""
     conn = get_db_connection()
     c = conn.cursor()
     
-    if month_filter and month_filter != "All Months":
+    if start_date and end_date:
+        # Date range filter
+        c.execute("""SELECT id, date_time, type, total_amount, amount_received, amount_left, note 
+                     FROM transactions 
+                     WHERE customer_id = ? AND date(date_time) BETWEEN ? AND ?
+                     ORDER BY date_time DESC""",
+                  (customer_id, start_date, end_date))
+    elif month_filter and month_filter != "All Months":
+        # Month filter
         c.execute("""SELECT id, date_time, type, total_amount, amount_received, amount_left, note 
                      FROM transactions 
                      WHERE customer_id = ? AND strftime('%Y-%m', date_time) = ?
                      ORDER BY date_time DESC""",
                   (customer_id, month_filter))
     else:
+        # No filter - all transactions
         c.execute("""SELECT id, date_time, type, total_amount, amount_received, amount_left, note 
                      FROM transactions 
                      WHERE customer_id = ?
@@ -349,19 +358,61 @@ else:
     if st.session_state.selected_customer_id:
         st.markdown("---")
         
-        # Month Filter
-        available_months = get_available_months(st.session_state.selected_customer_id)
-        current_month = get_local_time().strftime('%Y-%m')
+        # Filter Options
+        st.markdown("### 🔍 Search Transactions")
         
-        if available_months:
-            month_options = ["All Months"] + available_months
-            default_index = month_options.index(current_month) if current_month in month_options else 0
-            selected_month = st.selectbox("Filter by Month", month_options, index=default_index)
-        else:
-            selected_month = None
+        filter_type = st.radio(
+            "Filter By:",
+            ["Month", "Date Range", "All Transactions"],
+            horizontal=True,
+            help="Choose how you want to filter transactions"
+        )
         
-        # Get transactions
-        transactions = get_transactions(st.session_state.selected_customer_id, selected_month)
+        start_date = None
+        end_date = None
+        selected_month = None
+        
+        if filter_type == "Month":
+            # Month Filter
+            available_months = get_available_months(st.session_state.selected_customer_id)
+            current_month = get_local_time().strftime('%Y-%m')
+            
+            if available_months:
+                month_options = ["All Months"] + available_months
+                default_index = month_options.index(current_month) if current_month in month_options else 0
+                selected_month = st.selectbox("Select Month", month_options, index=default_index)
+            else:
+                selected_month = None
+                st.info("📅 No transactions available yet")
+        
+        elif filter_type == "Date Range":
+            # Date Range Filter with Calendar
+            col1, col2 = st.columns(2)
+            with col1:
+                start_date = st.date_input(
+                    "From Date",
+                    value=get_local_time().date().replace(day=1),
+                    help="Select start date"
+                )
+            with col2:
+                end_date = st.date_input(
+                    "To Date",
+                    value=get_local_time().date(),
+                    help="Select end date"
+                )
+            
+            if start_date > end_date:
+                st.error("❌ Start date cannot be after end date")
+                start_date = None
+                end_date = None
+        
+        # Get transactions with filters
+        transactions = get_transactions(
+            st.session_state.selected_customer_id, 
+            selected_month, 
+            start_date.strftime('%Y-%m-%d') if start_date else None,
+            end_date.strftime('%Y-%m-%d') if end_date else None
+        )
         
         # Summary
         if transactions:
@@ -378,12 +429,21 @@ else:
             
             # Download CSV
             st.write("")
+            
+            # Create filename based on filter type
+            if filter_type == "Date Range" and start_date and end_date:
+                filename = f"{selected_name}_{start_date}_{end_date}_{get_local_time().strftime('%H%M%S')}.csv"
+            elif filter_type == "Month" and selected_month and selected_month != "All Months":
+                filename = f"{selected_name}_{selected_month}_{get_local_time().strftime('%H%M%S')}.csv"
+            else:
+                filename = f"{selected_name}_all_records_{get_local_time().strftime('%Y%m%d_%H%M%S')}.csv"
+            
             df = pd.DataFrame(transactions, columns=['ID', 'Date & Time', 'Type', 'Total Amount', 'Amount Received', 'Amount Left', 'Note'])
             csv = df.to_csv(index=False)
             st.download_button(
-                label="📥 Download All Records (CSV)",
+                label="📥 Download Filtered Records (CSV)",
                 data=csv,
-                file_name=f"{selected_name}_records_{get_local_time().strftime('%Y%m%d_%H%M%S')}.csv",
+                file_name=filename,
                 mime="text/csv",
                 type="secondary",
                 use_container_width=True
