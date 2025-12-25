@@ -263,8 +263,6 @@ if not st.session_state.logged_in:
                         st.error("❌ Invalid email or password")
                 else:
                     st.warning("⚠️ Please fill in all fields")
-        
-        st.info("💡 Demo account: **admin@example.com** / **admin123**")
     
     with tab2:
         st.subheader("Create New Account")
@@ -363,29 +361,15 @@ else:
         
         filter_type = st.radio(
             "Filter By:",
-            ["Month", "Date Range", "All Transactions"],
+            ["Date Range", "All Transactions"],
             horizontal=True,
-            help="Choose how you want to filter transactions"
+            help="Choose how you want to view transactions"
         )
         
         start_date = None
         end_date = None
-        selected_month = None
         
-        if filter_type == "Month":
-            # Month Filter
-            available_months = get_available_months(st.session_state.selected_customer_id)
-            current_month = get_local_time().strftime('%Y-%m')
-            
-            if available_months:
-                month_options = ["All Months"] + available_months
-                default_index = month_options.index(current_month) if current_month in month_options else 0
-                selected_month = st.selectbox("Select Month", month_options, index=default_index)
-            else:
-                selected_month = None
-                st.info("📅 No transactions available yet")
-        
-        elif filter_type == "Date Range":
+        if filter_type == "Date Range":
             # Date Range Filter with Calendar
             col1, col2 = st.columns(2)
             with col1:
@@ -409,7 +393,7 @@ else:
         # Get transactions with filters
         transactions = get_transactions(
             st.session_state.selected_customer_id, 
-            selected_month, 
+            None,
             start_date.strftime('%Y-%m-%d') if start_date else None,
             end_date.strftime('%Y-%m-%d') if end_date else None
         )
@@ -432,16 +416,14 @@ else:
             
             # Create filename based on filter type
             if filter_type == "Date Range" and start_date and end_date:
-                filename = f"{selected_name}_{start_date}_{end_date}_{get_local_time().strftime('%H%M%S')}.csv"
-            elif filter_type == "Month" and selected_month and selected_month != "All Months":
-                filename = f"{selected_name}_{selected_month}_{get_local_time().strftime('%H%M%S')}.csv"
+                filename = f"{selected_name}_{start_date}_{end_date}.csv"
             else:
                 filename = f"{selected_name}_all_records_{get_local_time().strftime('%Y%m%d_%H%M%S')}.csv"
             
             df = pd.DataFrame(transactions, columns=['ID', 'Date & Time', 'Type', 'Total Amount', 'Amount Received', 'Amount Left', 'Note'])
             csv = df.to_csv(index=False)
             st.download_button(
-                label="📥 Download Filtered Records (CSV)",
+                label="📥 Download Records (CSV)",
                 data=csv,
                 file_name=filename,
                 mime="text/csv",
