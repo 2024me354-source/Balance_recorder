@@ -219,11 +219,13 @@ def calculate_summary(transactions):
     return total_received, total_given, balance
 
 def get_balance_message(balance):
-    """Get human-readable balance message"""
+    """Get human-readable balance message with correct business logic"""
     if balance > 0:
-        return f"💰 Customer has to give you ₨ {abs(balance):,.2f}", "normal"
-    elif balance < 0:
+        # Positive balance = I owe the customer (I received more than I gave)
         return f"💸 You have to give customer ₨ {abs(balance):,.2f}", "inverse"
+    elif balance < 0:
+        # Negative balance = Customer owes me (I gave more than I received)
+        return f"💰 Customer has to give you ₨ {abs(balance):,.2f}", "normal"
     else:
         return "✅ All settled", "off"
 
@@ -378,11 +380,16 @@ else:
             with col3:
                 st.metric("Balance", f"₨ {balance:,.2f}", delta_color=balance_color)
             
-            # Human-readable balance message
-            if balance != 0:
-                st.info(balance_msg)
-            else:
+            # Human-readable balance message with correct color coding
+            if balance > 0:
+                # I owe the customer - show as error/red
+                st.error(balance_msg)
+            elif balance < 0:
+                # Customer owes me - show as success/green
                 st.success(balance_msg)
+            else:
+                # All settled - show as info
+                st.info(balance_msg)
             
             # Download CSV
             st.write("")
