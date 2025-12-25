@@ -13,12 +13,29 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for dark theme and professional UI
+# Custom CSS for dark theme and professional UI with HIGH VISIBILITY
 st.markdown("""
 <style>
     /* Dark theme */
     .stApp {
-        background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+    
+    /* Force all text to be white and visible */
+    * {
+        color: #ffffff !important;
+    }
+    
+    /* Override Streamlit's default text colors */
+    .stMarkdown, .stMarkdown p, .stMarkdown span, .stMarkdown div {
+        color: #ffffff !important;
+    }
+    
+    /* Labels and captions */
+    label, .stMarkdown label {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
     }
     
     /* Custom containers */
@@ -27,126 +44,251 @@ st.markdown("""
         padding: 2rem;
         border-radius: 15px;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
     }
     
     .metric-card {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(102, 126, 234, 0.15);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(102, 126, 234, 0.3);
         border-radius: 12px;
         padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
     
     /* Button styling */
     .stButton>button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        border-radius: 8px;
-        padding: 0.6rem 1.2rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 0.6rem 1.2rem !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+        transition: all 0.3s ease !important;
     }
     
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
+        background: linear-gradient(135deg, #7c8eea 0%, #8a5bb2 100%) !important;
     }
     
-    /* Form inputs */
+    .stButton>button p, .stButton>button span, .stButton>button div {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Form inputs - HIGH CONTRAST */
     .stTextInput>div>div>input,
     .stSelectbox>div>div>select,
     .stTextArea>div>div>textarea,
     .stNumberInput>div>div>input {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        color: white;
-        padding: 0.6rem;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 2px solid rgba(102, 126, 234, 0.4) !important;
+        border-radius: 8px !important;
+        color: #ffffff !important;
+        padding: 0.8rem !important;
+        font-size: 1rem !important;
+        font-weight: 500 !important;
     }
     
-    /* Metrics */
+    .stTextInput>div>div>input::placeholder,
+    .stTextArea>div>div>textarea::placeholder {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    .stTextInput>div>div>input:focus,
+    .stSelectbox>div>div>select:focus,
+    .stTextArea>div>div>textarea:focus,
+    .stNumberInput>div>div>input:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+    }
+    
+    /* Selectbox text visibility */
+    .stSelectbox>div>div>select option {
+        background: #1a1a2e !important;
+        color: #ffffff !important;
+    }
+    
+    /* Metrics - HIGH VISIBILITY */
     [data-testid="stMetricValue"] {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #667eea;
+        font-size: 2.2rem !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
     }
     
     [data-testid="stMetricLabel"] {
-        font-size: 1rem;
-        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.1rem !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
     }
     
     /* Cards */
     .transaction-card {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(102, 126, 234, 0.08);
         border-left: 4px solid #667eea;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 0.5rem 0;
+        border: 2px solid rgba(102, 126, 234, 0.2);
+        padding: 1.2rem;
+        border-radius: 10px;
+        margin: 0.8rem 0;
         backdrop-filter: blur(10px);
     }
     
-    /* Headers */
-    h1, h2, h3 {
-        color: white !important;
-        font-weight: 700;
+    .transaction-card * {
+        color: #ffffff !important;
+    }
+    
+    /* Headers - BRIGHT */
+    h1, h2, h3, h4, h5, h6 {
+        color: #ffffff !important;
+        font-weight: 700 !important;
     }
     
     /* Success/Error boxes */
     .stSuccess, .stError, .stWarning, .stInfo {
-        border-radius: 8px;
-        backdrop-filter: blur(10px);
+        border-radius: 10px !important;
+        backdrop-filter: blur(10px) !important;
+        font-weight: 600 !important;
+    }
+    
+    .stSuccess {
+        background: rgba(76, 175, 80, 0.2) !important;
+        border: 2px solid rgba(76, 175, 80, 0.5) !important;
+        color: #ffffff !important;
+    }
+    
+    .stError {
+        background: rgba(244, 67, 54, 0.2) !important;
+        border: 2px solid rgba(244, 67, 54, 0.5) !important;
+        color: #ffffff !important;
+    }
+    
+    .stWarning {
+        background: rgba(255, 152, 0, 0.2) !important;
+        border: 2px solid rgba(255, 152, 0, 0.5) !important;
+        color: #ffffff !important;
+    }
+    
+    .stInfo {
+        background: rgba(33, 150, 243, 0.2) !important;
+        border: 2px solid rgba(33, 150, 243, 0.5) !important;
+        color: #ffffff !important;
     }
     
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(102, 126, 234, 0.1);
         border-radius: 10px;
         padding: 0.5rem;
     }
     
     .stTabs [data-baseweb="tab"] {
         border-radius: 8px;
-        color: white;
-        font-weight: 600;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
     }
     
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: #ffffff !important;
     }
     
     /* Radio buttons */
     .stRadio > div {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(102, 126, 234, 0.08);
         border-radius: 10px;
         padding: 1rem;
+        border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+    
+    .stRadio label {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
     }
     
     /* Download button */
     .stDownloadButton>button {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
     }
     
     .stDownloadButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5) !important;
+    }
+    
+    .stDownloadButton>button p, .stDownloadButton>button span, .stDownloadButton>button div {
+        color: #ffffff !important;
+        font-weight: 700 !important;
     }
     
     /* Date input */
     .stDateInput>div>div>input {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        color: white;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 2px solid rgba(102, 126, 234, 0.4) !important;
+        border-radius: 8px !important;
+        color: #ffffff !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Caption text */
+    .stCaption {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-size: 1rem !important;
+        font-weight: 500 !important;
     }
     
     /* Divider */
     hr {
-        border-color: rgba(255, 255, 255, 0.1);
-        margin: 2rem 0;
+        border-color: rgba(102, 126, 234, 0.3) !important;
+        margin: 2rem 0 !important;
+    }
+    
+    /* Write/markdown text */
+    .stMarkdown p, .stWrite {
+        color: #ffffff !important;
+        font-weight: 500 !important;
+        font-size: 1rem !important;
+    }
+    
+    /* Form submit button */
+    .stFormSubmitButton>button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border: none !important;
+    }
+    
+    .stFormSubmitButton>button p, .stFormSubmitButton>button span, .stFormSubmitButton>button div {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Disabled input */
+    input:disabled {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+        border-color: rgba(102, 126, 234, 0.2) !important;
+    }
+    
+    /* Table styling if any */
+    table {
+        color: #ffffff !important;
+    }
+    
+    thead th {
+        background: rgba(102, 126, 234, 0.2) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+    
+    tbody td {
+        color: #ffffff !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -388,7 +530,7 @@ if not st.session_state.logged_in:
     with col2:
         st.markdown('<div class="main-header">', unsafe_allow_html=True)
         st.markdown("<h1 style='text-align: center; color: white;'>📊 Customer Records Manager</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: rgba(255,255,255,0.8); font-size: 1.2rem;'>Professional Transaction Management System</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: white; font-size: 1.2rem; font-weight: 500;'>Professional Transaction Management System</p>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
@@ -447,7 +589,7 @@ else:
     col1, col2 = st.columns([4, 1])
     with col1:
         st.markdown(f"<h1 style='color: white; margin: 0;'>👋 Welcome, {st.session_state.user_name}!</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='color: rgba(255,255,255,0.8); margin: 0;'>Manage your customer transactions efficiently</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: white; margin: 0; font-weight: 500;'>Manage your customer transactions efficiently</p>", unsafe_allow_html=True)
     with col2:
         if st.button("🚪 Logout", type="secondary", use_container_width=True):
             st.session_state.clear()
