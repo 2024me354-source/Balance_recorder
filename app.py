@@ -5,10 +5,10 @@ from datetime import datetime
 import pandas as pd
 
 # Page config MUST be first
-st.set_page_config(page_title="Money Records Manager", layout="wide")
+st.set_page_config(page_title="Customer Records Manager", layout="wide", page_icon="📊")
 
 # Database setup
-DB_NAME = "money_records.db"
+DB_NAME = "customer_records.db"
 
 def get_db_connection():
     """Get database connection with thread safety"""
@@ -218,30 +218,19 @@ def calculate_summary(transactions):
     balance = total_received - total_given
     return total_received, total_given, balance
 
-def get_balance_message(balance):
-    """Get human-readable balance message with correct business logic"""
-    if balance > 0:
-        # Positive balance = I owe the customer (I received more than I gave)
-        return f"💸 You have to give customer ₨ {abs(balance):,.2f}", "inverse"
-    elif balance < 0:
-        # Negative balance = Customer owes me (I gave more than I received)
-        return f"💰 Customer has to give you ₨ {abs(balance):,.2f}", "normal"
-    else:
-        return "✅ All settled", "off"
-
 # ==================== MAIN APP ====================
 
 # AUTH SCREEN
 if not st.session_state.logged_in:
-    st.title("💰 Money Records Manager")
-    st.markdown("### Welcome! Please login or register to continue.")
+    st.title("📊 Customer Records Manager")
+    st.markdown("### Manage your customer transactions easily")
     
     tab1, tab2 = st.tabs(["Login", "Register"])
     
     with tab1:
-        st.subheader("Login")
+        st.subheader("Login to Your Account")
         with st.form("login_form"):
-            email = st.text_input("Email")
+            email = st.text_input("Email Address")
             password = st.text_input("Password", type="password")
             submit = st.form_submit_button("Login", type="primary", use_container_width=True)
             
@@ -254,36 +243,36 @@ if not st.session_state.logged_in:
                         st.session_state.user_name = user_name
                         st.rerun()
                     else:
-                        st.error("Invalid email or password")
+                        st.error("❌ Invalid email or password")
                 else:
-                    st.warning("Please fill in all fields")
+                    st.warning("⚠️ Please fill in all fields")
         
-        st.info("💡 Default login: **admin@example.com** / **admin123**")
+        st.info("💡 Demo account: **admin@example.com** / **admin123**")
     
     with tab2:
-        st.subheader("Register")
+        st.subheader("Create New Account")
         with st.form("register_form"):
-            name = st.text_input("Name")
-            email = st.text_input("Email")
-            password = st.text_input("Password", type="password")
-            submit = st.form_submit_button("Register", type="primary", use_container_width=True)
+            name = st.text_input("Your Name")
+            email = st.text_input("Email Address")
+            password = st.text_input("Password (minimum 6 characters)", type="password")
+            submit = st.form_submit_button("Create Account", type="primary", use_container_width=True)
             
             if submit:
                 if name and email and password:
                     if len(password) < 6:
-                        st.error("Password must be at least 6 characters")
+                        st.error("❌ Password must be at least 6 characters")
                     else:
                         success, user_id, user_name = register_user(name, email, password)
                         if success:
                             st.session_state.logged_in = True
                             st.session_state.user_id = user_id
                             st.session_state.user_name = user_name
-                            st.success("Registration successful!")
+                            st.success("✅ Account created successfully!")
                             st.rerun()
                         else:
-                            st.error("Email already exists")
+                            st.error("❌ Email already exists")
                 else:
-                    st.warning("Please fill in all fields")
+                    st.warning("⚠️ Please fill in all fields")
 
 # CUSTOMER SCREEN
 else:
@@ -326,23 +315,23 @@ else:
     
     # Add Customer Form
     if st.session_state.show_add_customer:
-        st.markdown("### Add New Customer")
+        st.markdown("### ➕ Add New Customer")
         with st.form("add_customer_form"):
-            new_customer_name = st.text_input("Customer Name")
+            new_customer_name = st.text_input("Customer Name", placeholder="Enter customer name")
             col1, col2 = st.columns(2)
             with col1:
-                save_customer = st.form_submit_button("💾 Save", type="primary", use_container_width=True)
+                save_customer = st.form_submit_button("💾 Save Customer", type="primary", use_container_width=True)
             with col2:
                 cancel_customer = st.form_submit_button("❌ Cancel", use_container_width=True)
             
             if save_customer:
                 if new_customer_name.strip():
                     add_customer(st.session_state.user_id, new_customer_name.strip())
-                    st.success(f"Customer '{new_customer_name}' added!")
+                    st.success(f"✅ Customer '{new_customer_name}' added successfully!")
                     st.session_state.show_add_customer = False
                     st.rerun()
                 else:
-                    st.error("Please enter a customer name")
+                    st.error("❌ Please enter a customer name")
             
             if cancel_customer:
                 st.session_state.show_add_customer = False
@@ -369,63 +358,57 @@ else:
         # Summary
         if transactions:
             total_received, total_given, balance = calculate_summary(transactions)
-            balance_msg, balance_color = get_balance_message(balance)
             
-            st.markdown("### 📊 Summary")
+            st.markdown("### 📊 Financial Summary")
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Total Received", f"₨ {total_received:,.2f}")
+                st.metric("💰 Total Received", f"₨ {total_received:,.2f}")
             with col2:
-                st.metric("Total Given", f"₨ {total_given:,.2f}")
+                st.metric("💸 Total Given", f"₨ {total_given:,.2f}")
             with col3:
-                st.metric("Balance", f"₨ {balance:,.2f}", delta_color=balance_color)
-            
-            # Human-readable balance message with correct color coding
-            if balance > 0:
-                # I owe the customer - show as error/red
-                st.error(balance_msg)
-            elif balance < 0:
-                # Customer owes me - show as success/green
-                st.success(balance_msg)
-            else:
-                # All settled - show as info
-                st.info(balance_msg)
+                balance_color = "normal" if balance >= 0 else "inverse"
+                st.metric("📈 Net Balance", f"₨ {balance:,.2f}", delta_color=balance_color)
             
             # Download CSV
             st.write("")
             df = pd.DataFrame(transactions, columns=['ID', 'Date & Time', 'Type', 'Total Amount', 'Amount Received', 'Amount Left', 'Note'])
             csv = df.to_csv(index=False)
             st.download_button(
-                label="📥 Download Records (CSV)",
+                label="📥 Download All Records (CSV)",
                 data=csv,
-                file_name=f"records_{selected_name}_{datetime.now().strftime('%Y%m%d')}.csv",
+                file_name=f"{selected_name}_records_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
-                type="secondary"
+                type="secondary",
+                use_container_width=True
             )
         
         # Today's Transactions
         today_trans = get_today_transactions(st.session_state.selected_customer_id)
         if today_trans:
             st.markdown("---")
-            st.markdown("### 📅 Today's Transactions")
+            st.markdown("### 📅 Today's Activity")
             for trans in today_trans:
                 date_time, trans_type, amount = trans
                 time_only = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S').strftime('%I:%M %p')
-                if trans_type == "Received":
-                    st.success(f"✅ Received ₨ {amount:,.2f} at {time_only}")
-                else:
-                    st.error(f"❌ Given ₨ {amount:,.2f} at {time_only}")
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    if trans_type == "Received":
+                        st.success(f"✅ Payment Received: ₨ {amount:,.2f}")
+                    else:
+                        st.error(f"❌ Payment Given: ₨ {amount:,.2f}")
+                with col2:
+                    st.write(f"🕐 {time_only}")
         
         st.markdown("---")
         
         # Add Record Button
-        if st.button("➕ Add Record", type="primary"):
+        if st.button("➕ Add Transaction", type="primary"):
             st.session_state.show_add_form = True
             st.session_state.edit_transaction_id = None
         
         # Add/Edit Form
         if st.session_state.show_add_form or st.session_state.edit_transaction_id:
-            st.markdown("### " + ("✏️ Edit Transaction" if st.session_state.edit_transaction_id else "➕ Add New Record"))
+            st.markdown("### " + ("✏️ Edit Transaction" if st.session_state.edit_transaction_id else "➕ Add New Transaction"))
             
             # Get existing transaction data if editing
             if st.session_state.edit_transaction_id:
@@ -441,23 +424,30 @@ else:
                 default_note = ""
             
             with st.form("transaction_form"):
-                trans_type = st.selectbox("Type", ["Received", "Given"], 
-                                         index=0 if default_type == "Received" else 1)
+                trans_type = st.selectbox("Transaction Type", ["Received", "Given"], 
+                                         index=0 if default_type == "Received" else 1,
+                                         help="Select whether you received payment or gave payment")
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    total_amount = st.number_input("Total Amount", min_value=0.0, value=float(default_total_amount), step=0.01)
+                    total_amount = st.number_input("Total Amount (₨)", min_value=0.0, value=float(default_total_amount), step=0.01,
+                                                  help="Enter the total transaction amount")
                 with col2:
-                    amount_received = st.number_input("Amount Received", min_value=0.0, value=float(default_amount_received), step=0.01)
+                    amount_received = st.number_input("Amount Received (₨)", min_value=0.0, value=float(default_amount_received), step=0.01,
+                                                     help="Enter the amount actually received")
                 
                 amount_left = total_amount - amount_received
-                st.number_input("Amount Left", value=float(amount_left), disabled=True)
+                st.number_input("Amount Remaining (₨)", value=float(amount_left), disabled=True,
+                               help="Automatically calculated: Total - Received")
                 
-                note = st.text_area("Note (optional)", value=default_note)
+                note = st.text_area("Additional Notes (Optional)", value=default_note, 
+                                   placeholder="Add any details or remarks about this transaction",
+                                   help="You can add payment method, purpose, or any other details")
                 
+                st.write("")
                 col1, col2 = st.columns(2)
                 with col1:
-                    save = st.form_submit_button("💾 Save", type="primary", use_container_width=True)
+                    save = st.form_submit_button("💾 Save Transaction", type="primary", use_container_width=True)
                 with col2:
                     cancel = st.form_submit_button("❌ Cancel", use_container_width=True)
                 
@@ -465,15 +455,15 @@ else:
                     if total_amount > 0:
                         if st.session_state.edit_transaction_id:
                             update_transaction(st.session_state.edit_transaction_id, trans_type, total_amount, amount_received, amount_left, note)
-                            st.success("Transaction updated!")
+                            st.success("✅ Transaction updated successfully!")
                         else:
                             add_transaction(st.session_state.selected_customer_id, trans_type, total_amount, amount_received, amount_left, note)
-                            st.success("Transaction added!")
+                            st.success("✅ Transaction added successfully!")
                         st.session_state.show_add_form = False
                         st.session_state.edit_transaction_id = None
                         st.rerun()
                     else:
-                        st.error("Total Amount must be greater than 0")
+                        st.error("❌ Total Amount must be greater than 0")
                 
                 if cancel:
                     st.session_state.show_add_form = False
@@ -483,7 +473,8 @@ else:
         # Display Transactions
         if transactions:
             st.markdown("---")
-            st.markdown("### 📜 Transaction History")
+            st.markdown("### 📜 All Transactions")
+            st.caption(f"Showing {len(transactions)} transaction(s)")
             
             for trans in transactions:
                 trans_id, date_time, trans_type, total_amount, amount_received, amount_left, note = trans
@@ -492,50 +483,50 @@ else:
                     col1, col2, col3, col4, col5, col6, col7 = st.columns([2, 1, 1.2, 1.2, 1.2, 2.5, 0.8])
                     
                     with col1:
-                        st.write(f"**{date_time}**")
+                        st.write(f"**📅 {date_time}**")
                     with col2:
                         if trans_type == "Received":
                             st.success("✅ Received")
                         else:
                             st.error("❌ Given")
                     with col3:
-                        st.write(f"**₨ {total_amount:,.2f}**")
+                        st.write(f"**Total: ₨ {total_amount:,.2f}**")
                     with col4:
-                        st.write(f"₨ {amount_received:,.2f}")
+                        st.write(f"Paid: ₨ {amount_received:,.2f}")
                     with col5:
-                        st.write(f"₨ {amount_left:,.2f}")
+                        st.write(f"Pending: ₨ {amount_left:,.2f}")
                     with col6:
                         st.write(note if note else "—")
                     with col7:
                         btn_col1, btn_col2 = st.columns(2)
                         with btn_col1:
-                            if st.button("✏️", key=f"edit_{trans_id}"):
+                            if st.button("✏️", key=f"edit_{trans_id}", help="Edit this transaction"):
                                 st.session_state.edit_transaction_id = trans_id
                                 st.session_state.show_add_form = False
                                 st.rerun()
                         with btn_col2:
-                            if st.button("🗑️", key=f"del_{trans_id}"):
+                            if st.button("🗑️", key=f"del_{trans_id}", help="Delete this transaction"):
                                 st.session_state[f'confirm_delete_{trans_id}'] = True
                                 st.rerun()
                     
                     # Delete confirmation
                     if st.session_state.get(f'confirm_delete_{trans_id}', False):
-                        st.warning("⚠️ Are you sure you want to delete this transaction?")
+                        st.warning("⚠️ **Are you sure?** This transaction will be permanently deleted.")
                         conf_col1, conf_col2 = st.columns(2)
                         with conf_col1:
-                            if st.button("✅ Yes, Delete", key=f"confirm_yes_{trans_id}", type="primary"):
+                            if st.button("✅ Yes, Delete", key=f"confirm_yes_{trans_id}", type="primary", use_container_width=True):
                                 delete_transaction(trans_id)
                                 st.session_state[f'confirm_delete_{trans_id}'] = False
-                                st.success("Transaction deleted!")
+                                st.success("✅ Transaction deleted successfully!")
                                 st.rerun()
                         with conf_col2:
-                            if st.button("❌ Cancel", key=f"confirm_no_{trans_id}"):
+                            if st.button("❌ Cancel", key=f"confirm_no_{trans_id}", use_container_width=True):
                                 st.session_state[f'confirm_delete_{trans_id}'] = False
                                 st.rerun()
                     
                     st.markdown("---")
         else:
-            st.info("📝 No transactions yet. Click 'Add Record' to create the first one!")
+            st.info("📝 No transactions found. Click 'Add Transaction' to record your first entry!")
     else:
         if customer_names:
             st.info("👆 Please select a customer to view and manage their records.")
