@@ -3,12 +3,20 @@ import sqlite3
 import hashlib
 from datetime import datetime
 import pandas as pd
+import pytz
 
 # Page config MUST be first
 st.set_page_config(page_title="Customer Records Manager", layout="wide", page_icon="📊")
 
 # Database setup
 DB_NAME = "customer_records.db"
+
+# Timezone - Change this to your local timezone
+LOCAL_TIMEZONE = pytz.timezone('Asia/Karachi')  # Pakistan timezone
+
+def get_local_time():
+    """Get current time in local timezone"""
+    return datetime.now(LOCAL_TIMEZONE)
 
 def get_db_connection():
     """Get database connection with thread safety"""
@@ -158,7 +166,7 @@ def get_today_transactions(customer_id):
     """Get today's transactions for a customer"""
     conn = get_db_connection()
     c = conn.cursor()
-    today = datetime.now().strftime('%Y-%m-%d')
+    today = get_local_time().strftime('%Y-%m-%d')
     c.execute("""SELECT date_time, type, total_amount 
                  FROM transactions 
                  WHERE customer_id = ? AND date(date_time) = ?
@@ -172,7 +180,7 @@ def add_transaction(customer_id, trans_type, total_amount, amount_received, amou
     """Add a new transaction"""
     conn = get_db_connection()
     c = conn.cursor()
-    date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    date_time = get_local_time().strftime('%Y-%m-%d %H:%M:%S')
     c.execute("""INSERT INTO transactions (customer_id, date_time, type, total_amount, amount_received, amount_left, note)
                  VALUES (?, ?, ?, ?, ?, ?, ?)""",
               (customer_id, date_time, trans_type, total_amount, amount_received, amount_left, note))
@@ -343,7 +351,7 @@ else:
         
         # Month Filter
         available_months = get_available_months(st.session_state.selected_customer_id)
-        current_month = datetime.now().strftime('%Y-%m')
+        current_month = get_local_time().strftime('%Y-%m')
         
         if available_months:
             month_options = ["All Months"] + available_months
@@ -375,7 +383,7 @@ else:
             st.download_button(
                 label="📥 Download All Records (CSV)",
                 data=csv,
-                file_name=f"{selected_name}_records_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                file_name=f"{selected_name}_records_{get_local_time().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
                 type="secondary",
                 use_container_width=True
