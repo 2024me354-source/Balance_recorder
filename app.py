@@ -4,6 +4,15 @@ import hashlib
 from datetime import datetime
 import pandas as pd
 import pytz
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+# ============ EMAIL CONFIGURATION ============
+# TODO: Replace with your Gmail credentials
+EMAIL_ADDRESS = "your-email@gmail.com"  # Your Gmail address
+EMAIL_PASSWORD = "your-app-password"     # Your Gmail App Password (16 characters)
+BUSINESS_NAME = "Haji Tariq Rafiq Traders"
 
 # Page config MUST be first
 st.set_page_config(
@@ -52,7 +61,6 @@ st.markdown("""
         color: #000000 !important;
         -webkit-text-fill-color: #000000 !important;
     }
-
     
     /* Labels and captions */
     label, .stMarkdown label {
@@ -129,6 +137,18 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
     }
     
+    /* Selectbox text visibility */
+    .stSelectbox>div>div>select option {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
+    .stSelectbox>div>div>select {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
     /* ULTIMATE NUCLEAR OPTION - Force BLACK text in selectbox */
     .stSelectbox,
     .stSelectbox *:not(label) {
@@ -139,46 +159,6 @@ st.markdown("""
     /* Labels stay white */
     .stSelectbox > label {
         color: #ffffff !important;
-    }
-    
-    .stSelectbox>div>div>select option {
-        background: #ffffff !important;
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    
-    .stSelectbox>div>div>select {
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    
-    /* Selectbox selected value text - FORCE BLACK */
-    .stSelectbox [data-baseweb="select"] {
-        color: #000000 !important;
-    }
-    
-    .stSelectbox [data-baseweb="select"] * {
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    
-    .stSelectbox [data-baseweb="select"] > div {
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    
-    .stSelectbox [data-baseweb="select"] span {
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    
-    .stSelectbox [data-baseweb="select"] div[role="button"] {
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    
-    .stSelectbox [data-baseweb="select"] [data-testid="stMarkdownContainer"] {
-        color: #000000 !important;
     }
     
     /* Dropdown menu items */
@@ -549,6 +529,60 @@ def hash_password(password):
     salt = b'money_records_salt_2024'
     return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000).hex()
 
+def send_verification_email(to_email, verification_code, user_name):
+    """Send verification email via Gmail SMTP"""
+    try:
+        # Create message
+        msg = MIMEMultipart('alternative')
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = to_email
+        msg['Subject'] = f"Verify Your {BUSINESS_NAME} Account"
+        
+        # HTML email template
+        html = f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">📊 {BUSINESS_NAME}</h1>
+                    </div>
+                    <div style="padding: 40px 30px;">
+                        <h2 style="color: #333;">Welcome, {user_name}! 👋</h2>
+                        <p style="color: #666; font-size: 16px; line-height: 1.6;">
+                            Thank you for registering with {BUSINESS_NAME}. To complete your registration, 
+                            please verify your email address using the code below:
+                        </p>
+                        <div style="background-color: #f8f9fa; border-left: 4px solid #667eea; padding: 20px; margin: 30px 0;">
+                            <p style="margin: 0; color: #666; font-size: 14px;">Your Verification Code:</p>
+                            <h1 style="margin: 10px 0 0 0; color: #667eea; font-size: 36px; letter-spacing: 5px;">{verification_code}</h1>
+                        </div>
+                        <p style="color: #666; font-size: 14px;">
+                            This code will expire in 24 hours. If you didn't create an account, please ignore this email.
+                        </p>
+                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <p style="color: #999; font-size: 12px; margin: 0;">
+                                © 2024 {BUSINESS_NAME}. All rights reserved.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        </html>
+        """
+        
+        # Attach HTML content
+        msg.attach(MIMEText(html, 'html'))
+        
+        # Send email
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            server.send_message(msg)
+        
+        return True
+    except Exception as e:
+        st.error(f"Email sending failed: {str(e)}")
+        return False
+
 def init_db():
     """Initialize database tables - called only once"""
     conn = get_db_connection()
@@ -560,7 +594,8 @@ def init_db():
                   email TEXT UNIQUE NOT NULL,
                   password TEXT NOT NULL,
                   verification_code TEXT,
-                  is_verified INTEGER DEFAULT 0)''')
+                  is_verified INTEGER DEFAULT 0,
+                  code_created_at TEXT)''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS customers
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -617,8 +652,6 @@ def init_session_state():
         st.session_state.awaiting_verification = False
     if 'temp_user_email' not in st.session_state:
         st.session_state.temp_user_email = None
-    if 'verification_code' not in st.session_state:
-        st.session_state.verification_code = None
 
 init_session_state()
 
@@ -635,13 +668,18 @@ def register_user(name, email, password):
         c = conn.cursor()
         hashed = hash_password(password)
         verification_code = generate_verification_code()
-        c.execute("INSERT INTO users (name, email, password, verification_code, is_verified) VALUES (?, ?, ?, ?, ?)",
-                  (name, email, hashed, verification_code, 0))
+        code_created_at = get_local_time().strftime('%Y-%m-%d %H:%M:%S')
+        
+        c.execute("INSERT INTO users (name, email, password, verification_code, is_verified, code_created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                  (name, email, hashed, verification_code, 0, code_created_at))
         conn.commit()
         conn.close()
-        return True, verification_code
+        
+        # Send verification email
+        email_sent = send_verification_email(email, verification_code, name)
+        return True, email_sent
     except sqlite3.IntegrityError:
-        return False, None
+        return False, False
 
 def verify_user(email, code):
     """Verify user with code"""
@@ -652,7 +690,7 @@ def verify_user(email, code):
     result = c.fetchone()
     
     if result and result[2] == code:
-        c.execute("UPDATE users SET is_verified = 1 WHERE email = ?", (email,))
+        c.execute("UPDATE users SET is_verified = 1, verification_code = NULL WHERE email = ?", (email,))
         conn.commit()
         conn.close()
         return True, result[0], result[1]
@@ -664,11 +702,23 @@ def resend_verification_code(email):
     """Resend verification code"""
     conn = get_db_connection()
     c = conn.cursor()
-    new_code = generate_verification_code()
-    c.execute("UPDATE users SET verification_code = ? WHERE email = ?", (new_code, email))
-    conn.commit()
+    c.execute("SELECT name FROM users WHERE email = ?", (email,))
+    result = c.fetchone()
+    
+    if result:
+        new_code = generate_verification_code()
+        code_created_at = get_local_time().strftime('%Y-%m-%d %H:%M:%S')
+        c.execute("UPDATE users SET verification_code = ?, code_created_at = ? WHERE email = ?", 
+                  (new_code, code_created_at, email))
+        conn.commit()
+        conn.close()
+        
+        # Send new verification email
+        email_sent = send_verification_email(email, new_code, result[0])
+        return True, email_sent
+    
     conn.close()
-    return new_code
+    return False, False
 
 def login_user(email, password):
     """Login user - only if verified"""
@@ -812,12 +862,11 @@ if not st.session_state.logged_in:
         if st.session_state.awaiting_verification:
             st.markdown('<div class="main-header">', unsafe_allow_html=True)
             st.markdown("<h1 style='text-align: center; color: white;'>✉️ Verify Your Email</h1>", unsafe_allow_html=True)
-            st.markdown("<p style='text-align: center; color: white; font-size: 1.2rem; font-weight: 500;'>Enter the verification code</p>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align: center; color: white; font-size: 1.2rem; font-weight: 500;'>Check your email for verification code</p>", unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
             
             st.info(f"📧 A verification code has been sent to: **{st.session_state.temp_user_email}**")
-            st.success(f"🔐 **Your Verification Code: {st.session_state.verification_code}**")
-            st.caption("(In production, this would be sent via email)")
+            st.warning("⚠️ Please check your spam folder if you don't see the email")
             
             with st.form("verification_form"):
                 entered_code = st.text_input("Enter 6-Digit Code", placeholder="Enter verification code", max_chars=6)
@@ -838,7 +887,6 @@ if not st.session_state.logged_in:
                             st.session_state.user_name = user_name
                             st.session_state.awaiting_verification = False
                             st.session_state.temp_user_email = None
-                            st.session_state.verification_code = None
                             st.success("✅ Account verified successfully!")
                             st.rerun()
                         else:
@@ -847,15 +895,18 @@ if not st.session_state.logged_in:
                         st.warning("⚠️ Please enter the verification code")
                 
                 if resend:
-                    new_code = resend_verification_code(st.session_state.temp_user_email)
-                    st.session_state.verification_code = new_code
-                    st.success(f"✅ New code sent: **{new_code}**")
+                    success, email_sent = resend_verification_code(st.session_state.temp_user_email)
+                    if success and email_sent:
+                        st.success("✅ New verification code sent to your email!")
+                    elif success:
+                        st.warning("⚠️ Code generated but email sending failed. Check email settings.")
+                    else:
+                        st.error("❌ Failed to resend code")
                     st.rerun()
             
             if st.button("← Back to Login"):
                 st.session_state.awaiting_verification = False
                 st.session_state.temp_user_email = None
-                st.session_state.verification_code = None
                 st.rerun()
         
         else:
@@ -884,6 +935,9 @@ if not st.session_state.logged_in:
                                 st.rerun()
                             elif success == "unverified":
                                 st.error("❌ Please verify your email first. Check your email for verification code.")
+                                st.session_state.awaiting_verification = True
+                                st.session_state.temp_user_email = email
+                                st.rerun()
                             else:
                                 st.error("❌ Invalid email or password")
                         else:
@@ -903,12 +957,14 @@ if not st.session_state.logged_in:
                             if len(password) < 6:
                                 st.error("❌ Password must be at least 6 characters")
                             else:
-                                success, verification_code = register_user(name, email, password)
+                                success, email_sent = register_user(name, email, password)
                                 if success:
                                     st.session_state.awaiting_verification = True
                                     st.session_state.temp_user_email = email
-                                    st.session_state.verification_code = verification_code
-                                    st.success("✅ Account created! Please verify your email.")
+                                    if email_sent:
+                                        st.success("✅ Account created! Verification email sent. Please check your inbox.")
+                                    else:
+                                        st.warning("⚠️ Account created but email sending failed. Please check email configuration.")
                                     st.rerun()
                                 else:
                                     st.error("❌ Email already exists")
