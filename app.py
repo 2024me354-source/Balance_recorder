@@ -549,7 +549,7 @@ if not st.session_state.logged_in:
     
     with col2:
         st.markdown('<div class="main-header">', unsafe_allow_html=True)
-        st.markdown("<h1 style='text-align: center; color: white;'>📊 Customer Records Manager</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: white;'>📊 Haji Tariq Rafiq Traders</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: white; font-size: 1.2rem; font-weight: 500;'>Professional Transaction Management System</p>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
