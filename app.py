@@ -115,16 +115,35 @@ st.markdown("""
     
     .stSelectbox>div>div>select {
         color: #000000 !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
     }
     
-    /* Selectbox selected value text */
+    /* Selectbox selected value text - FORCE BLACK */
+    .stSelectbox [data-baseweb="select"] {
+        color: #000000 !important;
+    }
+    
     .stSelectbox [data-baseweb="select"] > div {
         color: #000000 !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
     }
     
     .stSelectbox [data-baseweb="select"] span {
+        color: #000000 !important;
+        font-weight: 700 !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] div[role="button"] {
+        color: #000000 !important;
+        font-weight: 700 !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] [data-testid="stMarkdownContainer"] {
+        color: #000000 !important;
+    }
+    
+    /* Dropdown menu items */
+    [data-baseweb="popover"] [role="option"] {
         color: #000000 !important;
         font-weight: 600 !important;
     }
@@ -287,6 +306,32 @@ st.markdown("""
         font-weight: 600 !important;
     }
     
+    /* Calendar header - month/year */
+    [data-baseweb="calendar"] [role="heading"],
+    [data-baseweb="calendar"] [aria-live="polite"] {
+        background: #667eea !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 1.1rem !important;
+        padding: 1rem !important;
+    }
+    
+    /* Calendar navigation arrows */
+    [data-baseweb="calendar"] button[aria-label*="Previous"],
+    [data-baseweb="calendar"] button[aria-label*="Next"] {
+        color: #ffffff !important;
+        background: rgba(102, 126, 234, 0.3) !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Day names (Mo, Tu, We, etc) */
+    [data-baseweb="calendar"] [role="columnheader"] {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        background: rgba(102, 126, 234, 0.5) !important;
+        padding: 0.5rem !important;
+    }
+    
     [data-baseweb="calendar"] [role="button"] {
         color: #ffffff !important;
         background: rgba(102, 126, 234, 0.2) !important;
@@ -304,14 +349,28 @@ st.markdown("""
     
     [data-baseweb="month-header"] {
         color: #ffffff !important;
+        background: #667eea !important;
+        padding: 1rem !important;
     }
     
     [data-baseweb="calendar"] header {
         background: #667eea !important;
         color: #ffffff !important;
+        padding: 1rem !important;
     }
     
     [data-baseweb="calendar"] [aria-label*="Choose"] {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Calendar top section with month/year display */
+    [data-baseweb="calendar"] > div:first-child {
+        background: #667eea !important;
+        color: #ffffff !important;
+    }
+    
+    [data-baseweb="calendar"] > div:first-child * {
         color: #ffffff !important;
         font-weight: 700 !important;
     }
