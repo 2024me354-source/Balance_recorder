@@ -558,7 +558,9 @@ def init_db():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   name TEXT NOT NULL,
                   email TEXT UNIQUE NOT NULL,
-                  password TEXT NOT NULL)''')
+                  password TEXT NOT NULL,
+                  verification_code TEXT,
+                  is_verified INTEGER DEFAULT 0)''')
     
     c.execute('''CREATE TABLE IF NOT EXISTS customers
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -577,13 +579,13 @@ def init_db():
                   note TEXT,
                   FOREIGN KEY (customer_id) REFERENCES customers(id))''')
     
-    # Create default admin user
+    # Create default admin user with verified status
     try:
         c.execute("SELECT * FROM users WHERE email = ?", ('admin@example.com',))
         if not c.fetchone():
             hashed = hash_password('admin123')
-            c.execute("INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-                      ('Admin User', 'admin@example.com', hashed))
+            c.execute("INSERT INTO users (name, email, password, is_verified) VALUES (?, ?, ?, ?)",
+                      ('Admin User', 'admin@example.com', hashed, 1))
             conn.commit()
     except:
         pass
@@ -611,36 +613,77 @@ def init_session_state():
         st.session_state.edit_transaction_id = None
     if 'show_add_customer' not in st.session_state:
         st.session_state.show_add_customer = False
+    if 'awaiting_verification' not in st.session_state:
+        st.session_state.awaiting_verification = False
+    if 'temp_user_email' not in st.session_state:
+        st.session_state.temp_user_email = None
+    if 'verification_code' not in st.session_state:
+        st.session_state.verification_code = None
 
 init_session_state()
 
 # Database Functions
+def generate_verification_code():
+    """Generate a random 6-digit verification code"""
+    import random
+    return str(random.randint(100000, 999999))
+
 def register_user(name, email, password):
-    """Register a new user"""
+    """Register a new user with verification code"""
     try:
         conn = get_db_connection()
         c = conn.cursor()
         hashed = hash_password(password)
-        c.execute("INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-                  (name, email, hashed))
-        user_id = c.lastrowid
+        verification_code = generate_verification_code()
+        c.execute("INSERT INTO users (name, email, password, verification_code, is_verified) VALUES (?, ?, ?, ?, ?)",
+                  (name, email, hashed, verification_code, 0))
         conn.commit()
         conn.close()
-        return True, user_id, name
+        return True, verification_code
     except sqlite3.IntegrityError:
-        return False, None, None
+        return False, None
+
+def verify_user(email, code):
+    """Verify user with code"""
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT id, name, verification_code FROM users WHERE email = ? AND is_verified = 0",
+              (email,))
+    result = c.fetchone()
+    
+    if result and result[2] == code:
+        c.execute("UPDATE users SET is_verified = 1 WHERE email = ?", (email,))
+        conn.commit()
+        conn.close()
+        return True, result[0], result[1]
+    
+    conn.close()
+    return False, None, None
+
+def resend_verification_code(email):
+    """Resend verification code"""
+    conn = get_db_connection()
+    c = conn.cursor()
+    new_code = generate_verification_code()
+    c.execute("UPDATE users SET verification_code = ? WHERE email = ?", (new_code, email))
+    conn.commit()
+    conn.close()
+    return new_code
 
 def login_user(email, password):
-    """Login user"""
+    """Login user - only if verified"""
     conn = get_db_connection()
     c = conn.cursor()
     hashed = hash_password(password)
-    c.execute("SELECT id, name FROM users WHERE email = ? AND password = ?",
+    c.execute("SELECT id, name, is_verified FROM users WHERE email = ? AND password = ?",
               (email, hashed))
     result = c.fetchone()
     conn.close()
     if result:
-        return True, result[0], result[1]
+        if result[2] == 1:  # Check if verified
+            return True, result[0], result[1]
+        else:
+            return "unverified", None, None
     return False, None, None
 
 def get_customers(user_id):
@@ -765,59 +808,112 @@ if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        st.markdown('<div class="main-header">', unsafe_allow_html=True)
-        st.markdown("<h1 style='text-align: center; color: white;'>📊 Haji Tariq Rafiq Traders</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: white; font-size: 1.2rem; font-weight: 500;'>Professional Transaction Management System</p>", unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
-        
-        with tab1:
-            st.markdown("### Welcome Back")
-            with st.form("login_form"):
-                email = st.text_input("📧 Email Address", placeholder="Enter your email")
-                password = st.text_input("🔒 Password", type="password", placeholder="Enter your password")
+        # Check if awaiting verification
+        if st.session_state.awaiting_verification:
+            st.markdown('<div class="main-header">', unsafe_allow_html=True)
+            st.markdown("<h1 style='text-align: center; color: white;'>✉️ Verify Your Email</h1>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align: center; color: white; font-size: 1.2rem; font-weight: 500;'>Enter the verification code</p>", unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            st.info(f"📧 A verification code has been sent to: **{st.session_state.temp_user_email}**")
+            st.success(f"🔐 **Your Verification Code: {st.session_state.verification_code}**")
+            st.caption("(In production, this would be sent via email)")
+            
+            with st.form("verification_form"):
+                entered_code = st.text_input("Enter 6-Digit Code", placeholder="Enter verification code", max_chars=6)
                 st.write("")
-                submit = st.form_submit_button("🚀 Login", type="primary", use_container_width=True)
                 
-                if submit:
-                    if email and password:
-                        success, user_id, user_name = login_user(email, password)
+                col1, col2 = st.columns(2)
+                with col1:
+                    verify = st.form_submit_button("✅ Verify Account", type="primary", use_container_width=True)
+                with col2:
+                    resend = st.form_submit_button("🔄 Resend Code", use_container_width=True)
+                
+                if verify:
+                    if entered_code:
+                        success, user_id, user_name = verify_user(st.session_state.temp_user_email, entered_code)
                         if success:
                             st.session_state.logged_in = True
                             st.session_state.user_id = user_id
                             st.session_state.user_name = user_name
+                            st.session_state.awaiting_verification = False
+                            st.session_state.temp_user_email = None
+                            st.session_state.verification_code = None
+                            st.success("✅ Account verified successfully!")
                             st.rerun()
                         else:
-                            st.error("❌ Invalid email or password")
+                            st.error("❌ Invalid verification code")
                     else:
-                        st.warning("⚠️ Please fill in all fields")
-        
-        with tab2:
-            st.markdown("### Create Your Account")
-            with st.form("register_form"):
-                name = st.text_input("👤 Your Name", placeholder="Enter your full name")
-                email = st.text_input("📧 Email Address", placeholder="Enter your email")
-                password = st.text_input("🔒 Password", type="password", placeholder="Minimum 6 characters")
-                st.write("")
-                submit = st.form_submit_button("✨ Create Account", type="primary", use_container_width=True)
+                        st.warning("⚠️ Please enter the verification code")
                 
-                if submit:
-                    if name and email and password:
-                        if len(password) < 6:
-                            st.error("❌ Password must be at least 6 characters")
-                        else:
-                            success, user_id, user_name = register_user(name, email, password)
-                            if success:
+                if resend:
+                    new_code = resend_verification_code(st.session_state.temp_user_email)
+                    st.session_state.verification_code = new_code
+                    st.success(f"✅ New code sent: **{new_code}**")
+                    st.rerun()
+            
+            if st.button("← Back to Login"):
+                st.session_state.awaiting_verification = False
+                st.session_state.temp_user_email = None
+                st.session_state.verification_code = None
+                st.rerun()
+        
+        else:
+            st.markdown('<div class="main-header">', unsafe_allow_html=True)
+            st.markdown("<h1 style='text-align: center; color: white;'>📊 Haji Tariq Rafiq Traders</h1>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align: center; color: white; font-size: 1.2rem; font-weight: 500;'>Professional Transaction Management System</p>", unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            tab1, tab2 = st.tabs(["🔐 Login", "📝 Register"])
+            
+            with tab1:
+                st.markdown("### Welcome Back")
+                with st.form("login_form"):
+                    email = st.text_input("📧 Email Address", placeholder="Enter your email")
+                    password = st.text_input("🔒 Password", type="password", placeholder="Enter your password")
+                    st.write("")
+                    submit = st.form_submit_button("🚀 Login", type="primary", use_container_width=True)
+                    
+                    if submit:
+                        if email and password:
+                            success, user_id, user_name = login_user(email, password)
+                            if success == True:
                                 st.session_state.logged_in = True
                                 st.session_state.user_id = user_id
                                 st.session_state.user_name = user_name
-                                st.success("✅ Account created successfully!")
                                 st.rerun()
+                            elif success == "unverified":
+                                st.error("❌ Please verify your email first. Check your email for verification code.")
                             else:
-                                st.error("❌ Email already exists")
-                    else:
-                        st.warning("⚠️ Please fill in all fields")
+                                st.error("❌ Invalid email or password")
+                        else:
+                            st.warning("⚠️ Please fill in all fields")
+            
+            with tab2:
+                st.markdown("### Create Your Account")
+                with st.form("register_form"):
+                    name = st.text_input("👤 Your Name", placeholder="Enter your full name")
+                    email = st.text_input("📧 Email Address", placeholder="Enter your email")
+                    password = st.text_input("🔒 Password", type="password", placeholder="Minimum 6 characters")
+                    st.write("")
+                    submit = st.form_submit_button("✨ Create Account", type="primary", use_container_width=True)
+                    
+                    if submit:
+                        if name and email and password:
+                            if len(password) < 6:
+                                st.error("❌ Password must be at least 6 characters")
+                            else:
+                                success, verification_code = register_user(name, email, password)
+                                if success:
+                                    st.session_state.awaiting_verification = True
+                                    st.session_state.temp_user_email = email
+                                    st.session_state.verification_code = verification_code
+                                    st.success("✅ Account created! Please verify your email.")
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Email already exists")
+                        else:
+                            st.warning("⚠️ Please fill in all fields")
 
 # CUSTOMER SCREEN
 else:
