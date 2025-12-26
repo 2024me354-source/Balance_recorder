@@ -83,18 +83,19 @@ st.markdown("""
     .stSelectbox>div>div>select,
     .stTextArea>div>div>textarea,
     .stNumberInput>div>div>input {
-        background: rgba(255, 255, 255, 0.12) !important;
+        background: rgba(255, 255, 255, 0.95) !important;
         border: 2px solid rgba(102, 126, 234, 0.4) !important;
         border-radius: 8px !important;
-        color: #ffffff !important;
+        color: #000000 !important;
         padding: 0.8rem !important;
         font-size: 1rem !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
     }
     
     .stTextInput>div>div>input::placeholder,
     .stTextArea>div>div>textarea::placeholder {
-        color: rgba(255, 255, 255, 0.5) !important;
+        color: rgba(0, 0, 0, 0.5) !important;
+        font-weight: 500 !important;
     }
     
     .stTextInput>div>div>input:focus,
@@ -107,8 +108,14 @@ st.markdown("""
     
     /* Selectbox text visibility */
     .stSelectbox>div>div>select option {
-        background: #1a1a2e !important;
-        color: #ffffff !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
+    .stSelectbox>div>div>select {
+        color: #000000 !important;
+        font-weight: 600 !important;
     }
     
     /* Metrics - HIGH VISIBILITY */
@@ -249,11 +256,11 @@ st.markdown("""
     
     /* Date input */
     .stDateInput>div>div>input {
-        background: rgba(255, 255, 255, 0.12) !important;
+        background: rgba(255, 255, 255, 0.95) !important;
         border: 2px solid rgba(102, 126, 234, 0.4) !important;
         border-radius: 8px !important;
-        color: #ffffff !important;
-        font-weight: 500 !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
     }
     
     /* Caption text */
@@ -291,9 +298,10 @@ st.markdown("""
     
     /* Disabled input */
     input:disabled {
-        background: rgba(255, 255, 255, 0.05) !important;
-        color: rgba(255, 255, 255, 0.6) !important;
+        background: rgba(200, 200, 200, 0.3) !important;
+        color: rgba(0, 0, 0, 0.6) !important;
         border-color: rgba(102, 126, 234, 0.2) !important;
+        font-weight: 600 !important;
     }
     
     /* Table styling if any */
