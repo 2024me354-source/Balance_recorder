@@ -118,6 +118,17 @@ st.markdown("""
         font-weight: 600 !important;
     }
     
+    /* Selectbox selected value text */
+    .stSelectbox [data-baseweb="select"] > div {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] span {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
     /* Metrics - HIGH VISIBILITY */
     [data-testid="stMetricValue"] {
         font-size: 2.2rem !important;
@@ -261,6 +272,34 @@ st.markdown("""
         border-radius: 8px !important;
         color: #000000 !important;
         font-weight: 600 !important;
+    }
+    
+    /* Date picker calendar */
+    .stDateInput [data-baseweb="calendar"] {
+        background: #ffffff !important;
+        border: 2px solid #667eea !important;
+    }
+    
+    .stDateInput [data-baseweb="calendar"] * {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
+    .stDateInput [aria-label*="day"] {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+    
+    .stDateInput [data-baseweb="calendar"] [role="button"] {
+        color: #000000 !important;
+    }
+    
+    .stDateInput [data-baseweb="calendar"] header {
+        background: #667eea !important;
+    }
+    
+    .stDateInput [data-baseweb="calendar"] header * {
+        color: #ffffff !important;
     }
     
     /* Caption text */
