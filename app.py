@@ -28,7 +28,7 @@ st.markdown("""
     
     /* Override Streamlit's default text colors */
     .stMarkdown, .stMarkdown p, .stMarkdown span, .stMarkdown div {
-        color: #ffffff !important;
+        color: #000000 !important;
     }
     
     /* Force input and select elements to be BLACK */
