@@ -22,13 +22,19 @@ st.markdown("""
     }
     
     /* Force all text to be white and visible - EXCEPT INPUT FIELDS */
-    *:not(input):not(select):not(option):not(textarea) {
+    *:not(input):not(select):not(option):not(textarea):not([data-baseweb="select"]):not([role="button"]):not([role="option"]) {
         color: #ffffff !important;
     }
     
     /* Override Streamlit's default text colors */
     .stMarkdown, .stMarkdown p, .stMarkdown span, .stMarkdown div {
         color: #ffffff !important;
+    }
+    
+    /* Force input and select elements to be BLACK */
+    input, select, option, textarea {
+        color: #000000 !important;
+        font-weight: 700 !important;
     }
     
     /* Labels and captions */
@@ -106,11 +112,16 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
     }
     
-    /* Selectbox text visibility */
+    /* Selectbox text visibility - FORCE BLACK EVERYWHERE */
+    .stSelectbox * {
+        color: #000000 !important;
+        font-weight: 700 !important;
+    }
+    
     .stSelectbox>div>div>select option {
         background: #ffffff !important;
         color: #000000 !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
     }
     
     .stSelectbox>div>div>select {
@@ -121,6 +132,11 @@ st.markdown("""
     /* Selectbox selected value text - FORCE BLACK */
     .stSelectbox [data-baseweb="select"] {
         color: #000000 !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] * {
+        color: #000000 !important;
+        font-weight: 700 !important;
     }
     
     .stSelectbox [data-baseweb="select"] > div {
@@ -145,7 +161,22 @@ st.markdown("""
     /* Dropdown menu items */
     [data-baseweb="popover"] [role="option"] {
         color: #000000 !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
+        background: #ffffff !important;
+    }
+    
+    [data-baseweb="popover"] [role="option"]:hover {
+        background: #f0f0f0 !important;
+        color: #000000 !important;
+    }
+    
+    /* Force selectbox value display */
+    [data-baseweb="select"] [data-baseweb="input"] {
+        color: #000000 !important;
+    }
+    
+    [data-baseweb="select"] [data-baseweb="input"] * {
+        color: #000000 !important;
     }
     
     /* Metrics - HIGH VISIBILITY */
@@ -294,85 +325,96 @@ st.markdown("""
         font-size: 1rem !important;
     }
     
-    /* Date picker calendar styling */
+    /* Date picker calendar styling - SIMPLE BLACK THEME */
     [data-baseweb="calendar"] {
-        background: #1a1a2e !important;
-        border: 3px solid #667eea !important;
-        border-radius: 12px !important;
+        background: #000000 !important;
+        border: 2px solid #333333 !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
     }
     
     [data-baseweb="calendar"] * {
         color: #ffffff !important;
-        font-weight: 600 !important;
+        font-weight: 500 !important;
     }
     
     /* Calendar header - month/year */
     [data-baseweb="calendar"] [role="heading"],
     [data-baseweb="calendar"] [aria-live="polite"] {
-        background: #667eea !important;
+        background: #000000 !important;
         color: #ffffff !important;
-        font-weight: 700 !important;
-        font-size: 1.1rem !important;
-        padding: 1rem !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        padding: 0.5rem !important;
     }
     
     /* Calendar navigation arrows */
     [data-baseweb="calendar"] button[aria-label*="Previous"],
     [data-baseweb="calendar"] button[aria-label*="Next"] {
         color: #ffffff !important;
-        background: rgba(102, 126, 234, 0.3) !important;
-        font-weight: 700 !important;
+        background: transparent !important;
+        font-weight: 600 !important;
     }
     
     /* Day names (Mo, Tu, We, etc) */
     [data-baseweb="calendar"] [role="columnheader"] {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        background: rgba(102, 126, 234, 0.5) !important;
-        padding: 0.5rem !important;
+        color: #999999 !important;
+        font-weight: 500 !important;
+        background: transparent !important;
+        padding: 0.3rem !important;
+        font-size: 0.85rem !important;
     }
     
+    /* Date buttons */
     [data-baseweb="calendar"] [role="button"] {
         color: #ffffff !important;
-        background: rgba(102, 126, 234, 0.2) !important;
+        background: transparent !important;
+        font-weight: 500 !important;
+        border-radius: 4px !important;
     }
     
     [data-baseweb="calendar"] [role="button"]:hover {
-        background: rgba(102, 126, 234, 0.4) !important;
+        background: #222222 !important;
     }
     
+    /* Selected date */
     [data-baseweb="calendar"] [aria-selected="true"] {
         background: #667eea !important;
         color: #ffffff !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
     }
     
     [data-baseweb="month-header"] {
         color: #ffffff !important;
-        background: #667eea !important;
-        padding: 1rem !important;
+        background: #000000 !important;
+        padding: 0.5rem !important;
     }
     
     [data-baseweb="calendar"] header {
-        background: #667eea !important;
+        background: #000000 !important;
         color: #ffffff !important;
-        padding: 1rem !important;
+        padding: 0.5rem !important;
     }
     
     [data-baseweb="calendar"] [aria-label*="Choose"] {
         color: #ffffff !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
     }
     
     /* Calendar top section with month/year display */
     [data-baseweb="calendar"] > div:first-child {
-        background: #667eea !important;
+        background: #000000 !important;
         color: #ffffff !important;
     }
     
     [data-baseweb="calendar"] > div:first-child * {
         color: #ffffff !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Disable dates from other months */
+    [data-baseweb="calendar"] [aria-disabled="true"] {
+        color: #444444 !important;
     }
     
     /* Caption text */
