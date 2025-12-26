@@ -21,21 +21,38 @@ st.markdown("""
         background: #000000;
     }
     
-    /* Force all text to be white and visible - EXCEPT INPUT FIELDS */
-    *:not(input):not(select):not(option):not(textarea):not([data-baseweb="select"]):not([role="button"]):not([role="option"]) {
+    /* Default: all text white EXCEPT specific elements */
+    body, div, span, p, h1, h2, h3, h4, h5, h6, label {
         color: #ffffff !important;
     }
     
     /* Override Streamlit's default text colors */
     .stMarkdown, .stMarkdown p, .stMarkdown span, .stMarkdown div {
+        color: #ffffff !important;
+    }
+    
+    /* CRITICAL: Force BLACK text in selectbox - Override everything */
+    .stSelectbox svg {
         color: #000000 !important;
     }
     
-    /* Force input and select elements to be BLACK */
-    input, select, option, textarea {
+    .stSelectbox input,
+    .stSelectbox [data-baseweb="select"] div,
+    .stSelectbox [data-baseweb="select"] span,
+    .stSelectbox [data-baseweb="select"] p {
         color: #000000 !important;
-        font-weight: 700 !important;
+        -webkit-text-fill-color: #000000 !important;
+        fill: #000000 !important;
     }
+    
+    /* Force black on the VALUE displayed in selectbox */
+    div[data-baseweb="select"] > div > div,
+    div[data-baseweb="select"] > div > div > div,
+    div[data-baseweb="select"] > div > div > div > span {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+
     
     /* Labels and captions */
     label, .stMarkdown label {
@@ -112,10 +129,16 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
     }
     
-    /* Selectbox text visibility - FORCE BLACK EVERYWHERE */
-    .stSelectbox * {
+    /* ULTIMATE NUCLEAR OPTION - Force BLACK text in selectbox */
+    .stSelectbox,
+    .stSelectbox *:not(label) {
         color: #000000 !important;
-        font-weight: 700 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+    
+    /* Labels stay white */
+    .stSelectbox > label {
+        color: #ffffff !important;
     }
     
     .stSelectbox>div>div>select option {
