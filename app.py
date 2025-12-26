@@ -18,7 +18,7 @@ st.markdown("""
 <style>
     /* Dark theme */
     .stApp {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        background: #000000;
     }
     
     /* Force all text to be white and visible */
@@ -153,27 +153,47 @@ st.markdown("""
     }
     
     .stSuccess {
-        background: rgba(76, 175, 80, 0.2) !important;
-        border: 2px solid rgba(76, 175, 80, 0.5) !important;
-        color: #ffffff !important;
+        background: rgba(76, 175, 80, 0.95) !important;
+        border: 2px solid rgba(76, 175, 80, 1) !important;
+        color: #000000 !important;
+    }
+    
+    .stSuccess * {
+        color: #000000 !important;
+        font-weight: 600 !important;
     }
     
     .stError {
-        background: rgba(244, 67, 54, 0.2) !important;
-        border: 2px solid rgba(244, 67, 54, 0.5) !important;
-        color: #ffffff !important;
+        background: rgba(244, 67, 54, 0.95) !important;
+        border: 2px solid rgba(244, 67, 54, 1) !important;
+        color: #000000 !important;
+    }
+    
+    .stError * {
+        color: #000000 !important;
+        font-weight: 600 !important;
     }
     
     .stWarning {
-        background: rgba(255, 152, 0, 0.2) !important;
-        border: 2px solid rgba(255, 152, 0, 0.5) !important;
-        color: #ffffff !important;
+        background: rgba(255, 193, 7, 0.95) !important;
+        border: 2px solid rgba(255, 193, 7, 1) !important;
+        color: #000000 !important;
+    }
+    
+    .stWarning * {
+        color: #000000 !important;
+        font-weight: 600 !important;
     }
     
     .stInfo {
-        background: rgba(33, 150, 243, 0.2) !important;
-        border: 2px solid rgba(33, 150, 243, 0.5) !important;
-        color: #ffffff !important;
+        background: rgba(33, 150, 243, 0.95) !important;
+        border: 2px solid rgba(33, 150, 243, 1) !important;
+        color: #000000 !important;
+    }
+    
+    .stInfo * {
+        color: #000000 !important;
+        font-weight: 600 !important;
     }
     
     /* Tabs */
