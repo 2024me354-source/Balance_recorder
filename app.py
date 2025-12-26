@@ -21,8 +21,8 @@ st.markdown("""
         background: #000000;
     }
     
-    /* Force all text to be white and visible */
-    * {
+    /* Force all text to be white and visible - EXCEPT INPUT FIELDS */
+    *:not(input):not(select):not(option):not(textarea) {
         color: #ffffff !important;
     }
     
@@ -271,35 +271,49 @@ st.markdown("""
         border: 2px solid rgba(102, 126, 234, 0.4) !important;
         border-radius: 8px !important;
         color: #000000 !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
     }
     
-    /* Date picker calendar */
-    .stDateInput [data-baseweb="calendar"] {
-        background: #ffffff !important;
-        border: 2px solid #667eea !important;
+    /* Date picker calendar styling */
+    [data-baseweb="calendar"] {
+        background: #1a1a2e !important;
+        border: 3px solid #667eea !important;
+        border-radius: 12px !important;
     }
     
-    .stDateInput [data-baseweb="calendar"] * {
-        color: #000000 !important;
-        font-weight: 600 !important;
-    }
-    
-    .stDateInput [aria-label*="day"] {
-        color: #000000 !important;
-        font-weight: 600 !important;
-    }
-    
-    .stDateInput [data-baseweb="calendar"] [role="button"] {
-        color: #000000 !important;
-    }
-    
-    .stDateInput [data-baseweb="calendar"] header {
-        background: #667eea !important;
-    }
-    
-    .stDateInput [data-baseweb="calendar"] header * {
+    [data-baseweb="calendar"] * {
         color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+    
+    [data-baseweb="calendar"] [role="button"] {
+        color: #ffffff !important;
+        background: rgba(102, 126, 234, 0.2) !important;
+    }
+    
+    [data-baseweb="calendar"] [role="button"]:hover {
+        background: rgba(102, 126, 234, 0.4) !important;
+    }
+    
+    [data-baseweb="calendar"] [aria-selected="true"] {
+        background: #667eea !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+    
+    [data-baseweb="month-header"] {
+        color: #ffffff !important;
+    }
+    
+    [data-baseweb="calendar"] header {
+        background: #667eea !important;
+        color: #ffffff !important;
+    }
+    
+    [data-baseweb="calendar"] [aria-label*="Choose"] {
+        color: #ffffff !important;
+        font-weight: 700 !important;
     }
     
     /* Caption text */
